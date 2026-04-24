@@ -15,7 +15,7 @@ def transform_clean():
 
 @task
 def build_analysis(): 
-    subprocess.run(["python", ""])
+    subprocess.run(["python", "etl/build_analysis.py"], check = True)
 
 @flow(name = "Hacker News Pipeline")
 def hn_pipeline(): 
