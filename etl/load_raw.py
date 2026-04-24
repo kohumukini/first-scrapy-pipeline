@@ -6,30 +6,47 @@ from dotenv import load_dotenv
 from psycopg2.extras import Json
 from datetime import datetime, UTC
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+json_path = os.path.join(script_dir, '..', 'scraping', 'hn_scraper', 'hn_raw.json')
+final_path = os.path.normpath(json_path)
+
 load_dotenv()
 
-dbname = os.getenv("DB_NAME")
-user = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-host = os.getenv("DB_HOST")
-port = os.getenv("DB_PORT")
+conn = psycopg2.connect(
+    dbname = os.getenv("DB_NAME"),
+    user = os.getenv("DB_USER"),
+    password = os.getenv("DB_PASSWORD"),
+    host = os.getenv("DB_HOST"),
+    port = os.getenv("DB_PORT")
+)
 
-def load_raw(json_path): 
-    with psycopg2.connect(conn) as conn: 
-        with conn.cursor() as cursor: 
-            with open(json_path) as file_in: 
-                data = json.load(file_in)
+def load_raw(json_path):  
+    with conn.cursor() as cursor: 
 
-            rows_to_insert = [
-                (datetime.fromisoformat(item["scraped_at"]), Json(item))
-                for item in data
-            ] 
+        cursor.execute("TRUNCATE TABLE raw_hn")
 
-            from psycopg2.extras import execute_batch
-            execute_batch(cursor, """
-                INSERT INTO raw_hn (scraped_at, payload)
-                VALUES (%s, %s)              
-            """, rows_to_insert)   
+        with open(json_path) as file_in: 
+            data = json.load(file_in)
+
+        rows_to_insert = [
+            (datetime.fromisoformat(item["scraped_at"]), Json(item))
+            for item in data
+        ] 
+
+        from psycopg2.extras import execute_batch
+        execute_batch(cursor, """
+            INSERT INTO raw_hn (scraped_at, payload)
+            VALUES (%s, %s)              
+        """, rows_to_insert)   
+
+    conn.commit()
 
 if __name__ == "__main__": 
-    load_raw("scraping/hn_scraper/hn_raw.json")
+    try: 
+        load_raw(final_path)
+        print("Success: Data loaded!")
+    except Exception as e: 
+        print(f"Error: {e}")
+    finally: 
+        conn.close()
+    

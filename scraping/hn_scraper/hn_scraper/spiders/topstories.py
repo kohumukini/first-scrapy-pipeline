@@ -16,7 +16,7 @@ class TopstoriesSpider(scrapy.Spider):
             url = row.css(".titleline a::attr(href)").get()
 
             subtext = row.xpath("following-sibling::tr[1]") # Goes to the following sibling, and takes the second table row child
-            score = subtext.css(".score::text").re_first(r'\d+')
+            score = subtext.css(".score::text").get()
 
             if score is None: 
                 continue
