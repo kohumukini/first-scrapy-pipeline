@@ -22,3 +22,8 @@ A Python-based data pipeline that scrapes top stories from Hacker News, stores t
 python -m venv venv
 source venv/Scripts/activate  # On Windows: venv\\Scripts\\activate
 pip install -r requirements.txt
+```
+
+## Dashboard Preview
+![Author Performance](./tableau/visuals/sheet1.png)
+![Avg Score Distribution](./tableau//visuals/sheet2.png)
