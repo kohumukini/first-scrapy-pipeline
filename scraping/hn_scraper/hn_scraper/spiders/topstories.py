@@ -4,12 +4,17 @@ from datetime import datetime, UTC
 
 class TopstoriesSpider(scrapy.Spider):
     name = "topstories"
-    allowed_domains = ["news.ycombinator.com"]
-    start_urls = ["https://news.ycombinator.com"]
+    allowed_domains = ["ycombinator.com/", "news.ycombinator.com/"]
+    start_urls = ["https://news.ycombinator.com/news"]
+    page_count = 0
+    max_pages = 100
 
     def parse(self, response):
+        self.page_count += 1
+    
+        self.logger.info(f"SCRAPING PAGE {self.page_count} >>> {response.url}")
+    
         rows = response.css("tr.athing") # takes the table row items with a class of 'athing'
-
         for row in rows: 
             story_id = row.attrib.get("id")
             title = row.css(".titleline a::text").get()
@@ -33,3 +38,13 @@ class TopstoriesSpider(scrapy.Spider):
                 "age" : age, 
                 "scraped_at" : datetime.now(UTC).isoformat()
             }
+        next_page = response.css('a.morelink::attr(href)').get()
+
+        if next_page:
+            self.logger.info(f"MATCH FOUND: {next_page}")
+        else:
+            self.logger.info("MATCH FAILED: No 'More' button found in HTML.")
+
+        if next_page and self.page_count < self.max_pages: 
+            yield response.follow(next_page, callback=self.parse, dont_filter = True)
+

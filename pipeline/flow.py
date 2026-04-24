@@ -1,15 +1,27 @@
 import subprocess
 import sys
 
+from pathlib import Path
 from prefect import flow, task
+
+base_path = Path(__file__).parent.parent
 
 @task 
 def run_scrapy(): 
-    subprocess.run(["scrapy", "crawl", "topstories", "-O", "hn_raw.json"], check = True, cwd="scraping/hn_scraper")
+    scrapy_dir = base_path / "scraping" / "hn_scraper"
+
+    print(f"Targeting Directory: {scrapy_dir}")
+
+    subprocess.run(
+        ["scrapy", "crawl", "topstories", "-O", "hn_raw.json"], 
+        check = True, 
+        cwd=str(scrapy_dir))
 
 @task 
 def load_raw(): 
-    subprocess.run([sys.executable, "etl/load_raw.py"], check = True)
+    etl_script = base_path / "etl" / "load_raw.py"
+
+    subprocess.run([sys.executable, str(etl_script), "etl/load_raw.py"], check = True, cwd=str(base_path))
 
 @task
 def transform_clean(): 
