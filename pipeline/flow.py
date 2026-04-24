@@ -1,21 +1,23 @@
-from prefect import flow, task
 import subprocess
+import sys
+
+from prefect import flow, task
 
 @task 
 def run_scrapy(): 
-    subprocess.run(["scrapy", "crawl", "topstories", "-O", "hn_raw.json"], check = True)
+    subprocess.run(["scrapy", "crawl", "topstories", "-O", "hn_raw.json"], check = True, cwd="scraping/hn_scraper")
 
 @task 
 def load_raw(): 
-    subprocess.run(["python", "etl/load_raw.py"], check = True)
+    subprocess.run([sys.executable, "etl/load_raw.py"], check = True)
 
 @task
 def transform_clean(): 
-    subprocess.run(["python", "etl/transform_clean.py"], check = True)
+    subprocess.run([sys.executable, "etl/transform_clean.py"], check = True)
 
 @task
 def build_analysis(): 
-    subprocess.run(["python", "etl/build_analysis.py"], check = True)
+    subprocess.run([sys.executable, "etl/build_analysis.py"], check = True)
 
 @flow(name = "Hacker News Pipeline")
 def hn_pipeline(): 

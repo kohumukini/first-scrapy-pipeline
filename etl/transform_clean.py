@@ -28,7 +28,11 @@ def transform_raw():
                 cursor.execute("""
                     INSERT INTO hn_clean (story_id, title, url, score, author, age, scraped_at)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (story_id) DO NOTHING    
+                    ON CONFLICT (story_id) 
+                    DO UPDATE SET
+                        score = EXCLUDED.score, 
+                        age = EXCLUDED.age, 
+                        scraped_at = EXCLUDED.scraped_at;    
                 """, (
                     payload.get("story_id"), 
                     payload.get("title"),
