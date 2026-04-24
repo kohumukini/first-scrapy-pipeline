@@ -1,24 +1,24 @@
 # Hacker News ETL Pipeline
 
-A Python-based data pipeline that scrapes top stories from Hacker News, stores them in a PostgreSQL "Bronze" layer (Raw JSON), and transforms them into a "Silver" layer (Cleaned SQL) for visualization in Tableau.
+A Python-based data pipeline that scrapes top stories from Hacker News, stores them in a PostgreSQL layer (RAW Json) and transforms them into the next layer (Cleaned SQL) for Tableau Visualization
 
-## 📁 Project Structure
-- `scraping/`: Contains the Scrapy spider and API scrapers.
-- `etl/`: Python scripts for loading (`load_raw.py`) and transforming (`transform_raw.py`) data.
-- `db/`: SQL schema definitions for Raw, Clean, and Analysis layers.
-- `config/`: Environment and configuration files.
-- `.env`: (Ignored by git) Stores database credentials and connection strings.
-
-## 🛠️ Tech Stack
-- **Language:** Python 3.14
+## 🛠 Tech Stack
+- **Orchestration:** Prefect 3.6
+- **Scraping:** Scrapy
 - **Database:** PostgreSQL
-- **Libraries:** Scrapy, Psycopg2, Python-dotenv, Requests
+- **Language:** Python 3.14
 - **Visualization:** Tableau
 
-## 🚀 How It Works
+## 🏗 Architecture
+1. **Scrape:** A Scrapy spider pulls the top stories from Hacker News.
+2. **Load:** Data is cleaned and upserted into PostgreSQL (preventing duplicates).
+3. **Transform:** A Materialized View (`hn_analysis`) aggregates data for optimal dashboard performance.
+4. **Schedule:** Prefect manages a daily Cron job (8:00 AM) to refresh the data.
 
-### 1. Extraction (Scraping)
-Run the spider to generate the raw data file:
+## 🚀 Setup Instructions
+
+### 1. Environment Setup
 ```bash
-cd scraping/hn_scraper
-scrapy crawl topstories -o hn_raw.json
+python -m venv venv
+source venv/Scripts/activate  # On Windows: venv\\Scripts\\activate
+pip install -r requirements.txt
